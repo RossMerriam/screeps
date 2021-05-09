@@ -1,4 +1,5 @@
-import { RoomManager } from "../rooms/room-manager";
+import {Config} from "../../config/config";
+import {RoomManager} from "../rooms/room-manager";
 
 export namespace SourceManager {
     export let sources: any;
@@ -8,7 +9,9 @@ export namespace SourceManager {
         sources = RoomManager.getFirstRoom().find(FIND_SOURCES_ACTIVE);
         sourceCount = _.size(sources);
 
-        console.log(sourceCount + " sources in room.");
+        if (Config.VERBOSE) {
+            console.log(sourceCount + " sources in room.");
+        }
 
     }
 

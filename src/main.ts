@@ -14,8 +14,6 @@ export const global = ():void => {
 
 global();
 
-
-
 export const loop = ErrorMapper.wrapLoop(() => {
   //console.log(`Current game tick is ${Game.time}`);
 

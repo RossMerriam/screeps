@@ -2331,6 +2331,16 @@ class ErrorMapper {
 // Cache previously mapped traces to improve performance
 ErrorMapper.cache = {};
 
+var Config;
+(function (Config) {
+    // APPLICATION CORE CONFIGURATION
+    /**
+     * Enable this if you want a lot of text to be logged to console.
+     * @type {boolean}
+     */
+    Config.VERBOSE = true;
+})(Config || (Config = {}));
+
 var CreepManager;
 (function (CreepManager) {
     CreepManager.creeps = null;
@@ -2338,7 +2348,9 @@ var CreepManager;
     function loadCreeps() {
         CreepManager.creeps = Game.creeps;
         CreepManager.creepCount = _.size(CreepManager.creeps);
-        //console.log(creepCount + " creeps found in the playground.");
+        if (Config.VERBOSE) {
+            console.log(CreepManager.creepCount + " creeps found in the playground.");
+        }
     }
     CreepManager.loadCreeps = loadCreeps;
 })(CreepManager || (CreepManager = {}));
@@ -2349,7 +2361,9 @@ var RoomManager;
     function loadRooms() {
         RoomManager.rooms = Game.rooms;
         _loadRoomNames();
-        console.log(_.size(RoomManager.rooms) + " rooms found.");
+        if (Config.VERBOSE) {
+            console.log(_.size(RoomManager.rooms) + " rooms found.");
+        }
     }
     RoomManager.loadRooms = loadRooms;
     function getFirstRoom() {
@@ -2371,7 +2385,9 @@ var SourceManager;
     function loadSources() {
         SourceManager.sources = RoomManager.getFirstRoom().find(FIND_SOURCES_ACTIVE);
         SourceManager.sourceCount = _.size(SourceManager.sources);
-        console.log(SourceManager.sourceCount + " sources in room.");
+        if (Config.VERBOSE) {
+            console.log(SourceManager.sourceCount + " sources in room.");
+        }
     }
     SourceManager.loadSources = loadSources;
     function getFirstSource() {

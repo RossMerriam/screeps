@@ -1,3 +1,5 @@
+import {Config} from "../../config/config";
+
 namespace RoomManager {
 
     export let rooms: any;
@@ -8,7 +10,9 @@ namespace RoomManager {
 
         _loadRoomNames();
 
-        console.log(_.size(rooms) + " rooms found.");
+        if (Config.VERBOSE) {
+            console.log(_.size(rooms) + " rooms found.");
+        }
 
     }
 

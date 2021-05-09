@@ -1,4 +1,4 @@
-import {CreepBase} from "./creep-base";
+import {Config} from "../../config/config";
 
 namespace CreepManager {
 
@@ -9,7 +9,10 @@ namespace CreepManager {
         creeps = Game.creeps;
         creepCount = _.size(creeps);
 
-        //console.log(creepCount + " creeps found in the playground.");
+
+        if (Config.VERBOSE) {
+            console.log(creepCount + " creeps found in the playground.");
+        }
     }
 
 }
