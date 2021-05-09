@@ -8,7 +8,8 @@ export namespace SourceManager {
         sources = RoomManager.getFirstRoom().find(FIND_SOURCES_ACTIVE);
         sourceCount = _.size(sources);
 
-        sources = RoomManager.getFirstRoom();
+        console.log(sourceCount + " sources in room.");
+
     }
 
     export function getFirstSource(): Source {

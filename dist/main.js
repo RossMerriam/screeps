@@ -2365,12 +2365,27 @@ var RoomManager;
     }
 })(RoomManager || (RoomManager = {}));
 
+var SourceManager;
+(function (SourceManager) {
+    SourceManager.sourceCount = 0;
+    function loadSources() {
+        SourceManager.sources = RoomManager.getFirstRoom().find(FIND_SOURCES_ACTIVE);
+        SourceManager.sourceCount = _.size(SourceManager.sources);
+        console.log(SourceManager.sourceCount + " sources in room.");
+    }
+    SourceManager.loadSources = loadSources;
+    function getFirstSource() {
+        return SourceManager.sources[0];
+    }
+    SourceManager.getFirstSource = getFirstSource;
+})(SourceManager || (SourceManager = {}));
+
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 const global = () => {
     CreepManager.loadCreeps();
     RoomManager.loadRooms();
-    //SourceManager.loadSources();
+    SourceManager.loadSources();
 };
 global();
 const loop = ErrorMapper.wrapLoop(() => {

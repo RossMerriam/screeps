@@ -9,7 +9,7 @@ import { RoomManager } from "./components/rooms/room-manager";
 export const global = ():void => {
   CreepManager.loadCreeps();
   RoomManager.loadRooms();
-  //SourceManager.loadSources();
+  SourceManager.loadSources();
 }
 
 global();
