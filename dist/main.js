@@ -2338,16 +2338,43 @@ var CreepManager;
     function loadCreeps() {
         CreepManager.creeps = Game.creeps;
         CreepManager.creepCount = _.size(CreepManager.creeps);
-        console.log(CreepManager.creepCount + " creeps found in the playground.");
+        //console.log(creepCount + " creeps found in the playground.");
     }
     CreepManager.loadCreeps = loadCreeps;
 })(CreepManager || (CreepManager = {}));
 
+var RoomManager;
+(function (RoomManager) {
+    RoomManager.roomNames = [];
+    function loadRooms() {
+        RoomManager.rooms = Game.rooms;
+        _loadRoomNames();
+        console.log(_.size(RoomManager.rooms) + " rooms found.");
+    }
+    RoomManager.loadRooms = loadRooms;
+    function getFirstRoom() {
+        return RoomManager.rooms[RoomManager.roomNames[0]];
+    }
+    RoomManager.getFirstRoom = getFirstRoom;
+    function _loadRoomNames() {
+        for (let roomName in RoomManager.rooms) {
+            if (RoomManager.rooms.hasOwnProperty(roomName)) {
+                RoomManager.roomNames.push(roomName);
+            }
+        }
+    }
+})(RoomManager || (RoomManager = {}));
+
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
+const global = () => {
+    CreepManager.loadCreeps();
+    RoomManager.loadRooms();
+    //SourceManager.loadSources();
+};
+global();
 const loop = ErrorMapper.wrapLoop(() => {
     //console.log(`Current game tick is ${Game.time}`);
-    CreepManager.loadCreeps();
     // Automatically delete memory of missing creeps
     for (const name in Memory.creeps) {
         if (!(name in Game.creeps)) {
@@ -2356,5 +2383,6 @@ const loop = ErrorMapper.wrapLoop(() => {
     }
 });
 
+exports.global = global;
 exports.loop = loop;
 //# sourceMappingURL=main.js.map

@@ -1,6 +1,6 @@
 namespace RoomManager {
 
-    export let rooms: any = null;
+    export let rooms: any;
     export let roomNames: string[] = [];
 
     export function loadRooms() {
