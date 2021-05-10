@@ -5,7 +5,7 @@ export namespace Config {
      * Enable this if you want a lot of text to be logged to console.
      * @type {boolean}
      */
-    export const VERBOSE: boolean = true;
+    export const VERBOSE: boolean = false;
 
 
 

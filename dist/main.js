@@ -2338,7 +2338,7 @@ var Config;
      * Enable this if you want a lot of text to be logged to console.
      * @type {boolean}
      */
-    Config.VERBOSE = true;
+    Config.VERBOSE = false;
 })(Config || (Config = {}));
 
 var CreepManager;
@@ -2396,16 +2396,97 @@ var SourceManager;
     SourceManager.getFirstSource = getFirstSource;
 })(SourceManager || (SourceManager = {}));
 
+var SpawnManager;
+(function (SpawnManager) {
+    SpawnManager.spawnNames = [];
+    SpawnManager.spawnCount = 0;
+    function loadSpawns() {
+        SpawnManager.spawns = Game.spawns;
+        SpawnManager.spawnCount = _.size(SpawnManager.spawns);
+        _loadSpawnNames();
+        if (Config.VERBOSE) {
+            console.log(SpawnManager.spawnCount + " spawns in room.");
+        }
+    }
+    SpawnManager.loadSpawns = loadSpawns;
+    function getFirstSpawn() {
+        return SpawnManager.spawns[SpawnManager.spawnNames[0]];
+    }
+    SpawnManager.getFirstSpawn = getFirstSpawn;
+    function _loadSpawnNames() {
+        for (let spawnName in SpawnManager.spawns) {
+            if (SpawnManager.spawns.hasOwnProperty(spawnName)) {
+                SpawnManager.spawnNames.push(spawnName);
+            }
+        }
+    }
+})(SpawnManager || (SpawnManager = {}));
+
+function roleName(role) {
+    return role + Game.time;
+}
+
+class Harvester {
+    constructor() {
+        this.name = roleName('harvester');
+        this.body = [WORK, CARRY, MOVE, MOVE];
+    }
+    setCreep(creep) {
+        this.creep = creep;
+    }
+    spawn(Spawn) {
+        return Spawn.spawnCreep(this.body, this.name, {
+            memory: {
+                role: 'harvester',
+                room: String(Spawn.room),
+                working: false
+            }
+        });
+    }
+    work() {
+    }
+    harvest() {
+        let source = SourceManager.getFirstSource();
+        let spawn = SpawnManager.getFirstSpawn();
+        if (!this.isFull()) {
+            if (this.creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                this.creep.moveTo(source);
+            }
+        }
+        else {
+            if (this.creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                this.creep.moveTo(spawn);
+            }
+        }
+    }
+    isFull() {
+        return this.creep.store.getFreeCapacity() == 0;
+    }
+}
+
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 const global = () => {
     CreepManager.loadCreeps();
     RoomManager.loadRooms();
     SourceManager.loadSources();
+    SpawnManager.loadSpawns();
 };
 global();
 const loop = ErrorMapper.wrapLoop(() => {
     //console.log(`Current game tick is ${Game.time}`);
+    if (CreepManager.creepCount < 1) {
+        let harvester = new Harvester();
+        harvester.spawn(SpawnManager.getFirstSpawn());
+    }
+    for (let creepName in CreepManager.creeps) {
+        let creep = Game.creeps[creepName];
+        if (creep.memory.role == 'harvester') {
+            let harvester = new Harvester();
+            harvester.setCreep(creep);
+            harvester.harvest();
+        }
+    }
     // Automatically delete memory of missing creeps
     for (const name in Memory.creeps) {
         if (!(name in Game.creeps)) {

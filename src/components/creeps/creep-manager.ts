@@ -9,7 +9,6 @@ namespace CreepManager {
         creeps = Game.creeps;
         creepCount = _.size(creeps);
 
-
         if (Config.VERBOSE) {
             console.log(creepCount + " creeps found in the playground.");
         }
