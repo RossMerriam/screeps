@@ -23,7 +23,7 @@ export namespace SpawnManager {
 
     export const isSpawnFull = (): boolean => {
         let spawn = getFirstSpawn();
-        return spawn.store.getFreeCapacity() == 0;
+        return spawn.store.getFreeCapacity(RESOURCE_ENERGY) == 0;
     }
 
     function _loadSpawnNames() {

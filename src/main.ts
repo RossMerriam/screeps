@@ -21,22 +21,17 @@ global();
 export const loop = ErrorMapper.wrapLoop(() => {
   //console.log(`Current game tick is ${Game.time}`);
 
-    if (CreepManager.creepCount < 1) {
+    if (CreepManager.creepCount < 3) {
       let harvester = new Harvester();
       harvester.spawnCreep(SpawnManager.getFirstSpawn());
     }
 
     for(let creepName in CreepManager.creeps) {
         let creep = Game.creeps[creepName];
-
-        switch(creep.memory.role) {
-            case 'harvester': {
-                let harvester = new Harvester();
-                harvester.setCreep(creep);
-                harvester.work();
-                break;
-            }
-        }
+        console.log(creep.memory.role);
+        let harvester = new Harvester();
+        harvester.setCreep(creep);
+        harvester.work();
     }
 
 

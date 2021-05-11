@@ -1,5 +1,5 @@
 import {SourceManager} from "../sources/source-manager";
-import {roleName, isTargetFull} from "../../utils/helpers";
+import {creepName} from "../../utils/helpers";
 import {SpawnManager} from "../spawns/spawn-manager";
 import {RoomManager} from "../rooms/room-manager";
 
@@ -8,8 +8,7 @@ import {RoomManager} from "../rooms/room-manager";
 class Harvester {
 
     creep: Creep = null;
-    role: 'harvester';
-    name: string = roleName('harvester');
+    name: string = creepName();
     body: BodyPartConstant[] = [WORK, CARRY, MOVE, MOVE];
     targetSource: Source = SourceManager.getFirstSource();
     targetController: StructureController = null;
@@ -29,26 +28,28 @@ class Harvester {
         });
     }
 
+    setRole(newRole:string): void {
+        this.creep.memory.role = newRole;
+    }
+
     work(): void {
-        if(this.isStorageFull()){
-            this.emptyStorage();
-        } else {
-            this.harvest();
+        switch (this.creep.memory.role) {
+            case 'harvester': {
+                this.harvestLoop();
+                break;
+            }
+            case 'updater': {
+                this.updaterLoop();
+            }
         }
+    }
+
+    isStorageEmpty(): boolean {
+        return this.creep.store[RESOURCE_ENERGY] == 0;
     }
 
     isStorageFull(): boolean {
-        return this.creep.store.getFreeCapacity() == 0;
-    }
-
-    emptyStorage(): void {
-        if(SpawnManager.isSpawnFull()) {
-            console.log('updating controller!');
-            this.updateController();
-        } else {
-            console.log('updating SPAWN!');
-            this.transferToSpawn();
-        }
+        return this.creep.store.getFreeCapacity(RESOURCE_ENERGY) == 0;
     }
 
     transferToSpawn(): void {
@@ -58,10 +59,28 @@ class Harvester {
         }
     }
 
+    updaterLoop():void {
+        if(this.isStorageEmpty()) {
+            this.harvest();
+        } else {
+            this.updateController();
+        }
+    }
+
     updateController(): void {
         let target = this.targetController;
         if(this.creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
             this.creep.moveTo(target);
+        }
+    }
+
+    harvestLoop(): void {
+        if(!this.isStorageFull()) {
+            this.harvest();
+        }else if (!SpawnManager.isSpawnFull()) {
+            this.transferToSpawn();
+        } else {
+            this.setRole('updater');
         }
     }
 
