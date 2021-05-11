@@ -2425,16 +2425,23 @@ var SpawnManager;
 function roleName(role) {
     return role + Game.time;
 }
+function isTargetFull(structure) {
+    return structure.store.getFreeCapacity(RESOURCE_ENERGY) == 0;
+}
 
 class Harvester {
     constructor() {
+        this.creep = null;
         this.name = roleName('harvester');
         this.body = [WORK, CARRY, MOVE, MOVE];
+        this.targetSource = SourceManager.getFirstSource();
+        this.targetController = null;
     }
     setCreep(creep) {
         this.creep = creep;
+        this.targetController = this.creep.room.controller;
     }
-    spawn(Spawn) {
+    spawnCreep(Spawn) {
         return Spawn.spawnCreep(this.body, this.name, {
             memory: {
                 role: 'harvester',
@@ -2444,23 +2451,55 @@ class Harvester {
         });
     }
     work() {
-    }
-    harvest() {
-        let source = SourceManager.getFirstSource();
-        let spawn = SpawnManager.getFirstSpawn();
-        if (!this.isFull()) {
-            if (this.creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                this.creep.moveTo(source);
-            }
+        if (this.isStorageFull()) {
+            this.emptyStorage();
         }
         else {
-            if (this.creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                this.creep.moveTo(spawn);
+            this.harvest();
+        }
+    }
+    isStorageFull() {
+        return this.creep.store.getFreeCapacity() == 0;
+    }
+    emptyStorage() {
+        this.transferToDropOff();
+    }
+    transferToDropOff() {
+        let target = this.energyDropOffTarget();
+        console.log(target.structureType);
+        switch (String(target)) {
+            case STRUCTURE_SPAWN: {
+                if (this.creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    this.creep.moveTo(target);
+                }
+                break;
+            }
+            default: {
+                if (this.creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
+                    this.creep.moveTo(target);
+                }
+                else {
+                    console.log('test');
+                    console.log(this.creep.store.getUsedCapacity());
+                    // do {
+                    //     this.creep.upgradeController(target);
+                    // } while (this.creep.store.getUsedCapacity() > 0);
+                }
             }
         }
     }
-    isFull() {
-        return this.creep.store.getFreeCapacity() == 0;
+    energyDropOffTarget() {
+        let spawn = SpawnManager.getFirstSpawn();
+        let controller = this.targetController;
+        if (isTargetFull(spawn)) {
+            return controller;
+        }
+        return controller; //spawn;
+    }
+    harvest() {
+        if (this.creep.harvest(this.targetSource) == ERR_NOT_IN_RANGE) {
+            this.creep.moveTo(this.targetSource);
+        }
     }
 }
 
@@ -2477,14 +2516,17 @@ const loop = ErrorMapper.wrapLoop(() => {
     //console.log(`Current game tick is ${Game.time}`);
     if (CreepManager.creepCount < 1) {
         let harvester = new Harvester();
-        harvester.spawn(SpawnManager.getFirstSpawn());
+        harvester.spawnCreep(SpawnManager.getFirstSpawn());
     }
     for (let creepName in CreepManager.creeps) {
         let creep = Game.creeps[creepName];
-        if (creep.memory.role == 'harvester') {
-            let harvester = new Harvester();
-            harvester.setCreep(creep);
-            harvester.harvest();
+        switch (creep.memory.role) {
+            case 'harvester': {
+                let harvester = new Harvester();
+                harvester.setCreep(creep);
+                harvester.work();
+                break;
+            }
         }
     }
     // Automatically delete memory of missing creeps

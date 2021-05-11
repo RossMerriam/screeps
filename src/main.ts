@@ -23,15 +23,19 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
     if (CreepManager.creepCount < 1) {
       let harvester = new Harvester();
-      harvester.spawn(SpawnManager.getFirstSpawn());
+      harvester.spawnCreep(SpawnManager.getFirstSpawn());
     }
 
     for(let creepName in CreepManager.creeps) {
         let creep = Game.creeps[creepName];
-        if(creep.memory.role == 'harvester'){
-           let harvester = new Harvester();
-            harvester.setCreep(creep);
-            harvester.harvest();
+
+        switch(creep.memory.role) {
+            case 'harvester': {
+                let harvester = new Harvester();
+                harvester.setCreep(creep);
+                harvester.work();
+                break;
+            }
         }
     }
 

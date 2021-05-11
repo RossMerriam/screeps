@@ -1,20 +1,25 @@
 import {SourceManager} from "../sources/source-manager";
-import {roleName} from "../../utils/helpers";
+import {roleName, isTargetFull} from "../../utils/helpers";
 import {SpawnManager} from "../spawns/spawn-manager";
+import {RoomManager} from "../rooms/room-manager";
+
+
 
 class Harvester {
 
-    creep: Creep;
+    creep: Creep = null;
     role: 'harvester';
     name: string = roleName('harvester');
     body: BodyPartConstant[] = [WORK, CARRY, MOVE, MOVE];
+    targetSource: Source = SourceManager.getFirstSource();
+    targetController: StructureController = null;
 
     setCreep(creep: Creep): void {
         this.creep = creep;
+        this.targetController = this.creep.room.controller;
     }
 
-    spawn(Spawn: StructureSpawn): number {
-
+    spawnCreep(Spawn: StructureSpawn): number {
         return Spawn.spawnCreep(this.body, this.name, {
             memory: {
                 role: 'harvester',
@@ -22,30 +27,48 @@ class Harvester {
                 working: false
             }
         });
-
     }
 
     work(): void {
-
-    }
-
-    harvest(): void {
-        let source = SourceManager.getFirstSource();
-        let spawn = SpawnManager.getFirstSpawn();
-
-        if (!this.isFull()) {
-           if(this.creep.harvest(source) == ERR_NOT_IN_RANGE) {
-              this.creep.moveTo(source);
-           }
+        if(this.isStorageFull()){
+            this.emptyStorage();
         } else {
-           if(this.creep.transfer(spawn, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-               this.creep.moveTo(spawn);
-           }
+            this.harvest();
         }
     }
 
-    isFull(): boolean {
+    isStorageFull(): boolean {
         return this.creep.store.getFreeCapacity() == 0;
+    }
+
+    emptyStorage(): void {
+        if(SpawnManager.isSpawnFull()) {
+            console.log('updating controller!');
+            this.updateController();
+        } else {
+            console.log('updating SPAWN!');
+            this.transferToSpawn();
+        }
+    }
+
+    transferToSpawn(): void {
+        let target = SpawnManager.getFirstSpawn();
+        if(this.creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            this.creep.moveTo(target);
+        }
+    }
+
+    updateController(): void {
+        let target = this.targetController;
+        if(this.creep.upgradeController(target) == ERR_NOT_IN_RANGE) {
+            this.creep.moveTo(target);
+        }
+    }
+
+    harvest(): void {
+        if(this.creep.harvest(this.targetSource) == ERR_NOT_IN_RANGE) {
+            this.creep.moveTo(this.targetSource);
+        }
     }
 
 

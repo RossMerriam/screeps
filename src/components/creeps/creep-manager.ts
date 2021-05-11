@@ -13,7 +13,6 @@ namespace CreepManager {
             console.log(creepCount + " creeps found in the playground.");
         }
     }
-
 }
 
 export { CreepManager };

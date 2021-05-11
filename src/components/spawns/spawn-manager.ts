@@ -21,6 +21,11 @@ export namespace SpawnManager {
         return spawns[spawnNames[0]];
     }
 
+    export const isSpawnFull = (): boolean => {
+        let spawn = getFirstSpawn();
+        return spawn.store.getFreeCapacity() == 0;
+    }
+
     function _loadSpawnNames() {
         for (let spawnName in spawns) {
             if (spawns.hasOwnProperty(spawnName)) {
